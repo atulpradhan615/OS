@@ -1,47 +1,63 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <time.h>
+
+#include <stdio.h>      // [cite: 17]
+#include <stdlib.h>     // [cite: 18]
+#include <unistd.h>     // [cite: 19]
+#include <sys/wait.h>   // [cite: 20]
+#include <time.h>       // [cite: 20]
+
 int main() {
-int arr[30];
-int status;
-pid_t p1, p2;
-int final_sum_p1 = 0, final_sum_p2 = 0;
-srand(time(NULL));
-printf("Array initialized by Parent \n");
-for (int i = 0; i < 30; i++) arr[i] = rand() % 50 + 1;
-// Child 1
-p1 = fork();
-if (p1 == 0) {
- int sum = 0;
-    for(int i = 0; i<15; i++) {
-      if(arr[i] % 2 == 0) {
-         sum += arr[i];
-       }
-    }
-    exit(sum);
-}
+    int arr[30];        // [cite: 22]
+    int status;         // [cite: 23]
+    pid_t p1, p2;       // [cite: 24]
+    int final_sum_p1 = 0, final_sum_p2 = 0; // [cite: 26]
 
-// PARENT WAITS FOR CHILD 1
-waitpid(p1, &status, 0);
-final_sum_p1 = WEXITSTATUS(status);
-// Child 2
-p2 = fork();
-if (p2 == 0) {
- int sum = 0;
-   for(int i =15; i<30; i++) {
-      if(arr[i] % 2 == 0) {
-         sum += arr[i];
-      }
-    }
-    exit(sum);
-}
+    srand(time(NULL));  // [cite: 27]
+    printf("Array initialized by Parent \n"); // [cite: 28]
 
-// Parent waits for Child 2
-waitpid(p2, &status, 0);
-final_sum_p2 = WEXITSTATUS(status);
-printf("\nTotal Even Sum of left side and right side are: %d and %d\n",
-final_sum_p1, final_sum_p2);
-return 0;
+    // Requirement 1: Populate array with random values between 1 and 50 [cite: 9]
+    for (int i = 0; i < 30; i++) {
+        arr[i] = rand() % 50 + 1; // [cite: 29]
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+
+    // Requirement 2: Create Child 1 to calculate sum of even integers in indices 0-14 [cite: 11]
+    p1 = fork();        // [cite: 31]
+    if (p1 == 0) {      // [cite: 32]
+        int sum1 = 0;
+        for (int i = 0; i <= 14; i++) {
+            if (arr[i] % 2 == 0) {
+                sum1 += arr[i];
+            }
+        }
+        exit(sum1);     // Return sum to parent via exit status
+    }
+
+    // PARENT WAITS FOR CHILD 1 [cite: 38]
+    waitpid(p1, &status, 0); // [cite: 39]
+    // Requirement 3: Use WEXITSTATUS to collect result 
+    final_sum_p1 = WEXITSTATUS(status); // [cite: 40, 43]
+
+    // Requirement 2: Create Child 2 to calculate sum of even integers in indices 15-29 [cite: 13]
+    p2 = fork();        // [cite: 41, 42]
+    if (p2 == 0) {      // [cite: 44]
+        int sum2 = 0;
+        for (int i = 15; i <= 29; i++) {
+            if (arr[i] % 2 == 0) {
+                sum2 += arr[i];
+            }
+        }
+        exit(sum2);     // Return sum to parent via exit status
+    }
+
+    // Parent waits for Child 2 [cite: 48]
+    waitpid(p2, &status, 0); // [cite: 49]
+    // Requirement 3: Data Retrieval 
+    final_sum_p2 = WEXITSTATUS(status); // [cite: 50, 51]
+
+    // Requirement 3: Print results from Parent 
+    printf("\nTotal Even Sum of left side and right side are: %d and %d\n",
+           final_sum_p1, final_sum_p2); // [cite: 52, 53]
+
+    return 0;           // [cite: 54]
 }
