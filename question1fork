@@ -3,62 +3,45 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <time.h>
-
 int main() {
-    int arr[30]; [cite: 22]
-    int status; [cite: 23]
-    pid_t p1, p2; [cite: 24]
-    int final_sum_p1 = 0, final_sum_p2 = 0; [cite: 26]
-
-    srand(time(NULL)); [cite: 27]
-    printf("Array initialized by Parent:\n"); [cite: 28]
-    for (int i = 0; i < 30; i++) {
-        arr[i] = rand() % 50 + 1; // Populate with values 1-50 [cite: 9, 29]
-        printf("%d ", arr[i]);
+int arr[30];
+int status;
+pid_t p1, p2;
+int final_sum_p1 = 0, final_sum_p2 = 0;
+srand(time(NULL));
+printf("Array initialized by Parent \n");
+for (int i = 0; i < 30; i++) arr[i] = rand() % 50 + 1;
+// Child 1
+p1 = fork();
+if (p1 == 0) {
+ int sum = 0;
+    for(int i = 0; i<15; i++) {
+      if(arr[i] % 2 == 0) {
+         sum += arr[i];
+       }
     }
-    printf("\n");
+    exit(sum);
+}
 
-    // Child 1
-    p1 = fork(); [cite: 31]
-    if (p1 == 0) { [cite: 32]
-        int sum1 = 0;
-        // Calculate sum of even integers in indices 0-14 
-        for (int i = 0; i <= 14; i++) {
-            if (arr[i] % 2 == 0) {
-                sum1 += arr[i];
-            }
-        }
-        exit(sum1); // Pass sum back to parent 
+// PARENT WAITS FOR CHILD 1
+waitpid(p1, &status, 0);
+final_sum_p1 = WEXITSTATUS(status);
+// Child 2
+p2 = fork();
+if (p2 == 0) {
+ int sum = 0;
+   for(int i =15; i<30; i++) {
+      if(arr[i] % 2 == 0) {
+         sum += arr[i];
+      }
     }
+    exit(sum);
+}
 
-    // PARENT WAITS FOR CHILD 1 [cite: 38]
-    waitpid(p1, &status, 0); [cite: 39]
-    if (WIFEXITED(status)) {
-        final_sum_p1 = WEXITSTATUS(status); [cite: 40, 43]
-    }
-
-    // Child 2
-    p2 = fork(); [cite: 41, 42]
-    if (p2 == 0) { [cite: 44]
-        int sum2 = 0;
-        // Calculate sum of even integers in indices 15-29 
-        for (int i = 15; i <= 29; i++) {
-            if (arr[i] % 2 == 0) {
-                sum2 += arr[i];
-            }
-        }
-        exit(sum2); // Pass sum back to parent 
-    }
-
-    // Parent waits for Child 2 [cite: 48]
-    waitpid(p2, &status, 0); [cite: 49]
-    if (WIFEXITED(status)) {
-        final_sum_p2 = WEXITSTATUS(status); [cite: 50, 51]
-    }
-
-    // Final output [cite: 52]
-    printf("\nTotal Even Sum of left side and right side are: %d and %d\n", 
-           final_sum_p1, final_sum_p2); [cite: 53]
-
-    return 0; [cite: 54]
+// Parent waits for Child 2
+waitpid(p2, &status, 0);
+final_sum_p2 = WEXITSTATUS(status);
+printf("\nTotal Even Sum of left side and right side are: %d and %d\n",
+final_sum_p1, final_sum_p2);
+return 0;
 }
